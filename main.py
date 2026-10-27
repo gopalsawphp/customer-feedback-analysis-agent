@@ -1,8 +1,9 @@
 """Streamlit UI for the LangGraph customer feedback analysis workflow."""
 
-
 import html
 import json
+import re
+
 import streamlit as st
 
 from src.app.pipelines.pipeline import customer_feedback_Analysis
@@ -29,10 +30,7 @@ st.markdown(
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    /* Global theme */
-    html,
-    body,
-    [class*="css"] {
+    html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
 
@@ -50,7 +48,6 @@ st.markdown(
         padding-bottom: 2rem;
     }
 
-    /* Sidebar */
     [data-testid="stSidebar"] {
         background: #0c1325;
         border-right: 1px solid #25314b;
@@ -64,7 +61,6 @@ st.markdown(
         border-color: #2c3b59;
     }
 
-    /* Hero section */
     .hero {
         padding: 30px;
         border: 1px solid #344568;
@@ -96,26 +92,20 @@ st.markdown(
         margin-bottom: 0;
     }
 
-    /* Headings */
     .section-title {
         font-size: 18px;
         font-weight: 700;
         color: #f0f5ff;
         margin: 12px 0 16px;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
+    h1, h2, h3, h4, h5, h6 {
         color: #f0f5ff !important;
     }
 
-    p,
-    li,
-    label {
+    p, li, label {
         color: #e5ecff;
     }
 
@@ -123,7 +113,6 @@ st.markdown(
         color: #aebbd4 !important;
     }
 
-    /* Content panels */
     .panel {
         background: rgba(23, 34, 57, 0.92);
         border: 1px solid #2c3b59;
@@ -131,6 +120,7 @@ st.markdown(
         padding: 20px;
         margin-bottom: 16px;
         overflow-wrap: anywhere;
+        min-width: 0;
     }
 
     .panel-label {
@@ -139,28 +129,31 @@ st.markdown(
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1px;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
 
     .panel-value {
         color: #f4f7ff !important;
-        font-size: 21px;
+        font-size: 18px;
         font-weight: 700;
         line-height: 1.6;
         margin-top: 8px;
         overflow-wrap: anywhere;
-        word-break: break-word;
+        word-break: normal;
+        white-space: normal;
     }
 
     .muted {
         color: #aebbd4 !important;
         font-size: 13px;
         line-height: 1.7;
+        overflow-wrap: anywhere;
+        white-space: normal;
     }
 
-    /* Text inputs */
     .stTextInput input,
-    .stTextArea textarea,
-    .stNumberInput input {
+    .stTextArea textarea {
         background-color: #111b30 !important;
         color: #f1f5ff !important;
         -webkit-text-fill-color: #f1f5ff !important;
@@ -179,38 +172,29 @@ st.markdown(
     }
 
     .stTextInput input:focus,
-    .stTextArea textarea:focus,
-    .stNumberInput input:focus {
+    .stTextArea textarea:focus {
         border-color: #818cff !important;
         box-shadow: 0 0 0 2px rgba(91, 108, 255, 0.20) !important;
         outline: none !important;
     }
 
     .stTextInput label,
-    .stTextArea label,
-    .stNumberInput label,
-    .stSelectbox label,
-    .stMultiSelect label {
+    .stTextArea label {
         color: #e5ecff !important;
         font-weight: 600 !important;
     }
 
-    /* Email preview */
     .stTextArea textarea,
     .stTextArea textarea:disabled {
-        background-color: #111b30 !important;
-        color: #f1f5ff !important;
-        -webkit-text-fill-color: #f1f5ff !important;
-        opacity: 1 !important;
         line-height: 1.8 !important;
         font-size: 14px !important;
+        opacity: 1 !important;
     }
 
     .stTextArea textarea:disabled {
         cursor: text !important;
     }
 
-    /* Buttons */
     .stButton > button,
     .stDownloadButton > button,
     [data-testid="stFormSubmitButton"] button {
@@ -264,7 +248,6 @@ st.markdown(
         opacity: 0.8 !important;
     }
 
-    /* Checkbox */
     .stCheckbox {
         padding: 5px 0;
     }
@@ -281,31 +264,33 @@ st.markdown(
         accent-color: #7c5cff;
     }
 
-    /* Metric cards */
     [data-testid="stMetric"] {
         background: #172239;
         border: 1px solid #2c3b59;
         border-radius: 15px;
         padding: 18px;
+        min-width: 0;
     }
 
     [data-testid="stMetricLabel"],
     [data-testid="stMetricLabel"] p {
         color: #aebbd4 !important;
         font-size: 13px !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
     }
 
     [data-testid="stMetricValue"] {
         color: #ffffff !important;
         font-weight: 800 !important;
         overflow-wrap: anywhere;
+        white-space: normal !important;
     }
 
     [data-testid="stMetricDelta"] {
         color: #72e4d1 !important;
     }
 
-    /* Expanders */
     [data-testid="stExpander"] {
         background: #121c30;
         border: 1px solid #2c3b59;
@@ -316,6 +301,7 @@ st.markdown(
     [data-testid="stExpander"] summary {
         color: #edf2ff !important;
         background: #172239;
+        white-space: normal;
     }
 
     [data-testid="stExpander"] summary:hover {
@@ -325,9 +311,9 @@ st.markdown(
     [data-testid="stExpander"] summary p {
         color: #edf2ff !important;
         font-weight: 600;
+        white-space: normal;
     }
 
-    /* JSON output */
     [data-testid="stJson"],
     [data-testid="stCode"],
     .stJson {
@@ -336,12 +322,10 @@ st.markdown(
         border-radius: 10px;
     }
 
-    pre,
-    code {
+    pre, code {
         color: #dbe7ff !important;
     }
 
-    /* Status and alerts */
     .status {
         padding: 12px 15px;
         border-radius: 10px;
@@ -355,7 +339,6 @@ st.markdown(
         border-radius: 12px;
     }
 
-    /* Download button */
     .stDownloadButton {
         margin-top: 10px;
     }
@@ -364,12 +347,10 @@ st.markdown(
         width: 100%;
     }
 
-    /* Dividers */
     hr {
         border-color: #2c3b59 !important;
     }
 
-    /* Responsive layout */
     @media (max-width: 768px) {
         .block-container {
             padding: 1rem;
@@ -388,7 +369,7 @@ st.markdown(
         }
 
         .panel-value {
-            font-size: 18px;
+            font-size: 17px;
         }
     }
     </style>
@@ -414,8 +395,10 @@ def display_analysis(analysis):
     """Normalize analysis output from a Pydantic model, dict, or JSON string."""
     if hasattr(analysis, "model_dump"):
         return analysis.model_dump()
+
     if isinstance(analysis, dict):
         return analysis
+
     if isinstance(analysis, str):
         try:
             parsed = json.loads(analysis)
@@ -424,8 +407,10 @@ def display_analysis(analysis):
         except json.JSONDecodeError:
             pass
         return {"details": analysis}
+
     if analysis is None:
         return {}
+
     return {"details": display_value(analysis)}
 
 
@@ -437,6 +422,53 @@ def metric_card(label, value, help_text=None):
 def safe_html(value):
     """Escape dynamic values before inserting them into HTML."""
     return html.escape(display_value(value))
+
+
+def valid_customer_name(name):
+    """
+    Validate a name containing Unicode letters and common separators.
+    Allows names such as Alex Johnson, O'Connor, Anne-Marie, and José.
+    """
+    name = name.strip()
+
+    if not 2 <= len(name) <= 100:
+        return False
+
+    if not any(character.isalpha() for character in name):
+        return False
+
+    if any(character.isdigit() for character in name):
+        return False
+
+    # Names may contain letters separated by spaces, apostrophes,
+    # periods, or hyphens. Underscores and other symbols are rejected.
+    return bool(
+        re.fullmatch(
+            r"[^\W\d_]+(?:[ .'-][^\W\d_]+)*\.?",
+            name,
+            flags=re.UNICODE,
+        )
+    )
+
+
+def valid_email(email):
+    """Perform practical format validation for an email address."""
+    email = email.strip()
+
+    if not email or len(email) > 254:
+        return False
+
+    if any(character.isspace() for character in email):
+        return False
+
+    return bool(
+        re.fullmatch(
+            r"[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@"
+            r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
+            r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+",
+            email,
+        )
+    )
 
 
 # --------------------------------------------------
@@ -507,44 +539,47 @@ left, right = st.columns([1.15, 0.85], gap="large")
 
 with left:
     st.markdown(
-        '<div class="section-title">✍️ Customer Feedback</div>',
+        '<div class="section-title">Customer Feedback</div>',
         unsafe_allow_html=True,
     )
 
     with st.form("feedback_form"):
         customer_name = st.text_input(
-            "Customer name",
-            value="Alex Johnson",
-            placeholder="Enter customer name",
+            "Customer name *",
+            placeholder="Enter customer's full name",
+            max_chars=100,
+        )
+
+        customer_email = st.text_input(
+            "Customer email *",
+            placeholder="name@example.com",
+            max_chars=254,
         )
 
         feedback = st.text_area(
-            "Feedback message",
-            value=(
-                "The product is good, but delivery was late "
-                "and customer support did not help me."
-            ),
+            "Feedback message *",
             height=180,
             placeholder="Enter the customer's feedback...",
+            max_chars=10000,
         )
 
         st.caption(
-            "The feedback is passed to your existing "
-            "customer_feedback_Analysis() pipeline."
+            "All fields are required. The customer name, email, and feedback "
+            "will be passed to the analysis workflow."
         )
 
         acknowledge_email = st.checkbox(
-            "I understand that running the workflow may send a real email."
+            "I confirm that I understand running this workflow may send a real email. *"
         )
 
         submitted = st.form_submit_button(
-            "▶  Analyze Feedback & Run Workflow",
+            "Analyze Feedback & Run Workflow",
             use_container_width=True,
         )
 
 with right:
     st.markdown(
-        '<div class="section-title">⚡ What the AI does</div>',
+        '<div class="section-title">What the AI does</div>',
         unsafe_allow_html=True,
     )
 
@@ -561,8 +596,8 @@ with right:
             f"""
             <div class="panel">
                 <div class="panel-label">STEP {number}</div>
-                <div class="panel-value">{title}</div>
-                <div class="muted">{description}</div>
+                <div class="panel-value">{safe_html(title)}</div>
+                <div class="muted">{safe_html(description)}</div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -570,40 +605,70 @@ with right:
 
 
 # --------------------------------------------------
-# RUN EXISTING PIPELINE
+# VALIDATION AND PIPELINE EXECUTION
 # --------------------------------------------------
 
 if submitted:
-    if not feedback.strip():
-        st.error("Please enter customer feedback before continuing.")
-    elif not acknowledge_email:
-        st.warning(
-            "Please confirm that you understand the workflow may send "
-            "a real email before running it."
+    errors = []
+
+    cleaned_name = customer_name.strip()
+    cleaned_email = customer_email.strip()
+    cleaned_feedback = feedback.strip()
+
+    if not cleaned_name:
+        errors.append("Customer name is required.")
+    elif not valid_customer_name(cleaned_name):
+        errors.append(
+            "Enter a valid customer name using letters and common name separators "
+            "(spaces, apostrophes, periods, or hyphens). Numbers and other symbols "
+            "are not allowed."
         )
+
+    if not cleaned_email:
+        errors.append("Customer email is required.")
+    elif not valid_email(cleaned_email):
+        errors.append(
+            "Enter a valid email address, such as name@example.com."
+        )
+
+    if not cleaned_feedback:
+        errors.append("Feedback message is required.")
+    elif len(cleaned_feedback) < 5:
+        errors.append("Feedback message must contain at least 5 characters.")
+
+    if not acknowledge_email:
+        errors.append(
+            "Please confirm that you understand the workflow may send a real email."
+        )
+
+    if errors:
+        for error in errors:
+            st.error(error)
     else:
         try:
             with st.spinner(
                 "AI agents are processing feedback. Please wait..."
             ):
-                result = customer_feedback_Analysis(feedback.strip(), customer_name.strip())
+                result = customer_feedback_Analysis(
+                    cleaned_feedback,
+                    cleaned_name,
+                    cleaned_email,
+                )
 
             if not isinstance(result, dict):
                 st.error(
                     "The pipeline did not return a dictionary. "
                     "Check customer_feedback_Analysis() output."
                 )
-                st.stop()
-
-            st.session_state["feedback_result"] = result
-            st.session_state["customer_name"] = (
-                customer_name.strip() or "Customer"
-            )
-
-            st.success("Workflow execution completed.")
+            else:
+                st.session_state["feedback_result"] = result
+                st.session_state["customer_name"] = cleaned_name
+                st.session_state["customer_email"] = cleaned_email
+                st.session_state["customer_feedback"] = cleaned_feedback
+                st.success("Workflow execution completed.")
 
         except Exception as exc:
-            st.error("Workflow execution failed.")
+            st.error("Workflow execution failed. Check the pipeline configuration.")
             st.exception(exc)
 
 
@@ -617,7 +682,23 @@ if result:
     st.divider()
 
     st.markdown(
-        '<div class="section-title">📊 AI Analysis Dashboard</div>',
+        '<div class="section-title">AI Analysis Dashboard</div>',
+        unsafe_allow_html=True,
+    )
+
+    customer_name_result = st.session_state.get("customer_name", "Customer")
+    customer_email_result = st.session_state.get(
+        "customer_email", "Not available"
+    )
+
+    st.markdown(
+        f"""
+        <div class="panel">
+            <div class="panel-label">CUSTOMER</div>
+            <div class="panel-value">{safe_html(customer_name_result)}</div>
+            <div class="muted">{safe_html(customer_email_result)}</div>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
@@ -626,7 +707,11 @@ if result:
     analysis = display_analysis(result.get("analysis", {}))
 
     severity = str(analysis.get("severity", "N/A")).upper()
-    issue_type = str(analysis.get("issue_type", "N/A")).replace("_", " ").title()
+    issue_type = (
+        str(analysis.get("issue_type", "N/A"))
+        .replace("_", " ")
+        .title()
+    )
     tone = str(analysis.get("tone", "N/A")).title()
 
     col1, col2, col3, col4 = st.columns(4)
@@ -647,7 +732,7 @@ if result:
     # SENTIMENT DETAILS
     # ----------------------------------------------
 
-    st.markdown("### 🧠 Sentiment Intelligence")
+    st.markdown("### Sentiment Intelligence")
 
     sentiment_col, reason_col = st.columns([0.7, 1.3])
 
@@ -677,10 +762,12 @@ if result:
     # ISSUE ANALYSIS
     # ----------------------------------------------
 
-    st.markdown("### 🔎 Complaint Analysis")
+    st.markdown("### Complaint Analysis")
 
     summary = analysis.get("summary", "Not available")
-    suggested_action = analysis.get("suggested_action", "Not available")
+    suggested_action = analysis.get(
+        "suggested_action", "Not available"
+    )
 
     detail_col, action_col = st.columns(2)
 
@@ -719,7 +806,7 @@ if result:
     # GENERATED EMAIL
     # ----------------------------------------------
 
-    st.markdown("### ✉️ Generated Customer Email")
+    st.markdown("### Generated Customer Email")
 
     email_subject = result.get("email_subject", "")
     email_body = result.get("email_body", "")
@@ -748,7 +835,7 @@ if result:
 
         if email_body:
             st.download_button(
-                "⬇️ Download email body",
+                "Download email body",
                 data=display_value(email_body),
                 file_name="customer_support_email.txt",
                 mime="text/plain",
@@ -787,14 +874,19 @@ if result:
     # COMPLETE OUTPUT
     # ----------------------------------------------
 
-    st.markdown("### 🧾 Complete Pipeline Output")
+    st.markdown("### Complete Pipeline Output")
 
     with st.expander("Inspect raw result returned by the pipeline"):
         st.json(result)
 
     st.download_button(
-        "⬇️ Download complete analysis as JSON",
-        data=json.dumps(result, indent=2, ensure_ascii=False, default=str),
+        "Download complete analysis as JSON",
+        data=json.dumps(
+            result,
+            indent=2,
+            ensure_ascii=False,
+            default=str,
+        ),
         file_name="customer_feedback_analysis.json",
         mime="application/json",
     )

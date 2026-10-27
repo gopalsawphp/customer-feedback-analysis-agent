@@ -95,14 +95,20 @@ uv --version
 
 ### 4. Clone the project
 
-No Git remote URL is configured in this copy of the project. Replace the example URL below with the repository URL you have access to:
+This repository is available at:
 
-```powershell
-git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
-cd YOUR-REPOSITORY
+```text
+https://github.com/gopalsawphp/customer-feedback-analysis-agent
 ```
 
-Replace `YOUR-USERNAME` and `YOUR-REPOSITORY` with the values from your repository URL. The `cd` argument must match the directory created by `git clone`. Run the remaining commands from the project root (the directory containing `pyproject.toml` and `main.py`).
+Current default branch: `main`
+
+```powershell
+git clone https://github.com/gopalsawphp/customer-feedback-analysis-agent.git
+cd customer-feedback-analysis-agent
+```
+
+Run the remaining commands from the project root (the directory containing `pyproject.toml` and `main.py`).
 
 ### 5. Synchronize project dependencies
 

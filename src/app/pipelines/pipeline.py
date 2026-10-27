@@ -3,7 +3,7 @@ from src.app.agents.agent import agent_manager
 from src.app.schemas.schema import FeedbackState
 # ---------- RUN THE WORKFLOW ----------
 
-def customer_feedback_Analysis(feedback: str, customer_name: str) -> FeedbackState:
+def customer_feedback_Analysis(feedback: str, customer_name: str, customer_email) -> FeedbackState:
     graph = agent_manager();
     graph_path = Path("customer_feedback_graph.png")
     if not graph_path.exists():
@@ -14,7 +14,7 @@ def customer_feedback_Analysis(feedback: str, customer_name: str) -> FeedbackSta
 
     initial_state: FeedbackState = {
         "customer_name": customer_name,
-        "customer_email": "mail2gopalphp@gmail.com",
+        "customer_email": customer_email,
         "feedback": feedback,
         "sentiment": None,
         "sentiment_reason": None,
